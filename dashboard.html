@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SITTA – Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <style>
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--green-800) 0%, var(--green-600) 100%);
+      border-radius: var(--radius-lg); padding: 30px 32px; margin-bottom: 28px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px;
+      color: var(--white); position: relative; overflow: hidden;
+    }
+    .welcome-banner::after {
+      content: '📚'; position: absolute; right: 120px; top: 50%; transform: translateY(-50%);
+      font-size: 80px; opacity: .1; pointer-events: none;
+    }
+    .welcome-banner h2 { font-family: var(--font-display); font-size: 1.6rem; color: var(--white); margin-bottom: 6px; }
+    .welcome-banner p  { color: rgba(255,255,255,.75); font-size: 14px; max-width: 400px; }
+    .welcome-date { text-align: right; color: rgba(255,255,255,.7); font-size: 13px; }
+    .welcome-date strong { display: block; font-size: 1.1rem; color: var(--amber-400); font-weight: 700; }
+
+    .section-title {
+      font-size: 14px; font-weight: 700; color: var(--gray-400);
+      text-transform: uppercase; letter-spacing: .07em;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--gray-100);
+    }
+  </style>
+</head>
+<body>
+<div id="dashboardPage" class="app-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menu utama">
+    <div class="sidebar-brand">
+      <div class="brand-logo">S</div>
+      <div>
+        <div class="brand-name">SITTA</div>
+        <div class="brand-sub">Universitas Terbuka</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu Utama</div>
+
+      <a href="dashboard.html" class="nav-item active" aria-current="page">
+        <span class="nav-icon">🏠</span> Dashboard
+      </a>
+
+      <a href="stock.html" class="nav-item">
+        <span class="nav-icon">📦</span> Stock Bahan Ajar
+      </a>
+
+      <a href="tracking.html" class="nav-item">
+        <span class="nav-icon">🚚</span> Tracking Delivery Order
+      </a>
+
+      <div class="nav-item has-sub" role="button" tabindex="0" aria-expanded="false">
+        <span class="nav-icon">📊</span> Laporan
+        <span style="margin-left:auto;font-size:12px;">▾</span>
+        <div class="nav-sub" role="menu">
+          <a href="#" class="nav-sub-item" role="menuitem">📈 Monitoring Progress DO</a>
+          <a href="#" class="nav-sub-item" role="menuitem">📋 Rekap Bahan Ajar</a>
+        </div>
+      </div>
+
+      <a href="#" class="nav-item">
+        <span class="nav-icon">🗂</span> Histori Transaksi
+      </a>
+
+      <div class="nav-section-label">Akun</div>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">👤</span> Profil Saya
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar js-user-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name js-user-name">–</div>
+          <div class="user-role js-user-role">–</div>
+        </div>
+        <button class="btn-logout js-logout" title="Keluar" aria-label="Keluar">🚪</button>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <button class="hamburger" id="hamburger" aria-label="Buka menu">☰</button>
+        <div class="topbar-left">
+          <h2>Dashboard</h2>
+          <p>Ringkasan sistem SITTA</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-greeting js-greeting">–</div>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="page-content" id="main">
+
+      <!-- Welcome banner -->
+      <div class="welcome-banner">
+        <div>
+          <h2 class="js-greeting">–</h2>
+          <p>Selamat datang kembali di SITTA. Pantau stok, lacak pengiriman, dan kelola distribusi bahan ajar dari sini.</p>
+          <div style="margin-top:10px;font-size:12px;opacity:.7;">
+            Unit: <strong class="js-user-lokasi" style="color:var(--amber-400);">–</strong>
+          </div>
+        </div>
+        <div class="welcome-date">
+          <span id="tanggalHari">–</span>
+          <strong id="jamSekarang">–</strong>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon green">📚</div>
+          <div>
+            <div class="stat-value" id="statTotal">–</div>
+            <div class="stat-label">Judul Bahan Ajar</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">🗃</div>
+          <div>
+            <div class="stat-value" id="statStok">–</div>
+            <div class="stat-label">Total Unit Stok</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">📋</div>
+          <div>
+            <div class="stat-value" id="statDO">–</div>
+            <div class="stat-label">Delivery Order Aktif</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">👥</div>
+          <div>
+            <div class="stat-value">5</div>
+            <div class="stat-label">Pengguna Terdaftar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu navigasi -->
+      <div class="section-title">Navigasi Fitur</div>
+      <div class="menu-grid">
+        <a href="stock.html" class="menu-card">
+          <div class="menu-icon">📦</div>
+          <div>
+            <div class="menu-title">Stock Bahan Ajar</div>
+            <div class="menu-desc">Lihat stok, tambah, dan kelola data bahan ajar yang tersedia.</div>
+          </div>
+        </a>
+
+        <a href="tracking.html" class="menu-card">
+          <div class="menu-icon">🚚</div>
+          <div>
+            <div class="menu-title">Tracking Delivery Order</div>
+            <div class="menu-desc">Lacak status pengiriman Delivery Order secara real-time.</div>
+          </div>
+        </a>
+
+        <a href="#" class="menu-card">
+          <div class="menu-icon">📈</div>
+          <div>
+            <div class="menu-title">Monitoring Progress DO</div>
+            <div class="menu-desc">Pantau progres Delivery Order bahan ajar yang sedang berjalan.</div>
+          </div>
+        </a>
+
+        <a href="#" class="menu-card">
+          <div class="menu-icon">📋</div>
+          <div>
+            <div class="menu-title">Rekap Bahan Ajar</div>
+            <div class="menu-desc">Lihat rekap keseluruhan distribusi dan tiras bahan ajar.</div>
+          </div>
+        </a>
+
+        <a href="#" class="menu-card">
+          <div class="menu-icon">🗂</div>
+          <div>
+            <div class="menu-title">Histori Transaksi</div>
+            <div class="menu-desc">Riwayat lengkap semua transaksi bahan ajar yang pernah dilakukan.</div>
+          </div>
+        </a>
+
+        <a href="#" class="menu-card" onclick="Auth.logout();return false;">
+          <div class="menu-icon" style="background:var(--red-100);">🚪</div>
+          <div>
+            <div class="menu-title" style="color:var(--red-500);">Keluar</div>
+            <div class="menu-desc">Akhiri sesi dan kembali ke halaman login.</div>
+          </div>
+        </a>
+      </div>
+
+    </main><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<script src="js/data.js"></script>
+<script src="js/script.js"></script>
+<script src="js/dataBahanAjar.js"></script>
+</body>
+</html>

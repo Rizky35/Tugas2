@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SITTA – Stock Bahan Ajar</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <style>
+        /* Specific CSS Overrides for stock.html */
+        
+        /* 1. Fix Modal Double Scroll */
+        .modal-overlay {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            max-height: 90vh; /* Limit modal height */
+            display: flex;
+            flex-direction: column;
+            margin: auto;
+            overflow: hidden; /* Prevent double scroll on modal container */
+        }
+        .modal form {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .modal-body {
+            flex: 1;
+            overflow-y: auto; /* Only scroll here */
+            padding: 20px;
+        }
+        .modal-header, .modal-footer {
+            flex-shrink: 0; /* Keep header and footer fixed */
+        }
+
+        /* 2. Table Responsiveness - Horizontal Scroll */
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+        }
+        .table-wrap table {
+            min-width: 900px; /* Ensure table doesn't squish too much */
+            margin-bottom: 0;
+        }
+
+        /* 3. Mobile Specific Adjustments */
+        @media (max-width: 768px) {
+            .filter-grid-vue {
+                grid-template-columns: 1fr !important;
+            }
+            .modal {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        [v-cloak] { display: none; }
+        .badge-orange { background: var(--amber-100); color: var(--amber-500); }
+    </style>
+</head>
+<body>
+<div id="stockApp" class="app-layout" v-cloak>
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-logo">S</div>
+            <div>
+                <div class="brand-name">SITTA</div>
+                <div class="brand-sub">Universitas Terbuka</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Menu Utama</div>
+            <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+            <a href="stock.html" class="nav-item active"><span class="nav-icon" aria-current="page">📦</span> Stock Bahan Ajar</a>
+            <a href="tracking.html" class="nav-item"><span class="nav-icon">🚚</span> Tracking Delivery Order</a>
+            <div class="nav-item has-sub" role="button" tabindex="0" aria-expanded="false">
+                <span class="nav-icon">📊</span> Laporan
+                <span style="margin-left:auto;font-size:12px;">▾</span>
+                <div class="nav-sub" role="menu">
+                    <a href="#" class="nav-sub-item" role="menuitem">📈 Monitoring Progress DO</a>
+                    <a href="#" class="nav-sub-item" role="menuitem">📋 Rekap Bahan Ajar</a>
+                </div>
+            </div>
+            <a href="#" class="nav-item"><span class="nav-icon">🗂</span> Histori Transaksi</a>
+            <div class="nav-section-label">Akun</div>
+            <a href="#" class="nav-item"><span class="nav-icon">👤</span> Profil Saya</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar js-user-avatar">?</div>
+                <div class="user-info">
+                    <div class="user-name js-user-name">–</div>
+                    <div class="user-role js-user-role">–</div>
+                </div>
+                <button class="btn-logout js-logout" title="Keluar" aria-label="Keluar">🚪</button>
+            </div>
+        </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <div class="main-content">
+        <header class="topbar">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <button class="hamburger" id="hamburger">☰</button>
+                <div class="topbar-left">
+                    <h2>Stock Bahan Ajar</h2>
+                    <p>Manajemen ketersediaan bahan ajar seluruh UT Daerah</p>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-greeting js-greeting">–</div>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <!-- Filter & Sort Section -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-body">
+                    <div class="filter-grid-vue" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label class="form-label">Filter UT-Daerah</label>
+                            <select class="form-control" v-model="filters.upbjj">
+                                <option value="">Semua UT-Daerah</option>
+                                <option v-for="item in upbjjList" :key="item" :value="item">{{ item }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group" v-if="filters.upbjj">
+                            <label class="form-label">Filter Kategori</label>
+                            <select class="form-control" v-model="filters.kategori">
+                                <option value="">Semua Kategori</option>
+                                <option v-for="item in kategoriList" :key="item" :value="item">{{ item }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status Stock</label>
+                            <div style="display: flex; gap: 10px; align-items: center; height: 40px;">
+                                <label><input type="checkbox" v-model="filters.warningOnly"> Re-order (Low/Empty)</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Urutkan Berdasarkan</label>
+                            <select class="form-control" v-model="sortBy">
+                                <option value="judul_asc">Judul (A-Z)</option>
+                                <option value="judul_desc">Judul (Z-A)</option>
+                                <option value="qty_asc">Stock (Terkecil)</option>
+                                <option value="qty_desc">Stock (Terbesar)</option>
+                                <option value="harga_asc">Harga (Termurah)</option>
+                                <option value="harga_desc">Harga (Termahal)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-outline btn-sm" @click="resetFilters">Reset Filter</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📦 Daftar Stock Bahan Ajar</span>
+                    <button class="btn btn-accent btn-sm" @click="openAddModal">＋ Tambah Bahan Ajar</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kode / Judul</th>
+                                <th>Kategori</th>
+                                <th>UT-Daerah</th>
+                                <th>Lokasi Rak</th>
+                                <th>Stock</th>
+                                <th>Safety</th>
+                                <th>Status</th>
+                                <th>Catatan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(item, index) in filteredStok" :key="item.kode">
+                                <td>
+                                    <strong>{{ item.kode }}</strong><br>
+                                    <small>{{ item.judul }}</small>
+                                </td>
+                                <td>{{ item.kategori }}</td>
+                                <td>{{ item.upbjj }}</td>
+                                <td>{{ item.lokasiRak }}</td>
+                                <td>{{ item.qty }}</td>
+                                <td>{{ item.safety }}</td>
+                                <td>
+                                    <span :class="getStatusBadgeClass(item)">
+                                        {{ getStatusText(item) }}
+                                    </span>
+                                </td>
+                                <td v-html="item.catatanHTML"></td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" @click="editItem(item)">Edit</button>
+                                </td>
+                            </tr>
+                            <tr v-if="filteredStok.length === 0">
+                                <td colspan="9" style="text-align: center; padding: 20px;">Data tidak ditemukan</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Tambah/Edit -->
+    <div class="modal-overlay" :class="{ active: showAddModal || showEditModal }" @click.self="closeModals">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">{{ showEditModal ? 'Edit' : 'Tambah' }} Bahan Ajar</span>
+                <button type="button" class="modal-close" @click="closeModals">✕</button>
+            </div>
+            <form @submit.prevent="saveBahanAjar">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Kode Mata Kuliah</label>
+                        <input type="text" class="form-control" v-model="formData.kode" required :disabled="showEditModal">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Judul Mata Kuliah</label>
+                        <input type="text" class="form-control" v-model="formData.judul" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label class="form-label">Kategori</label>
+                            <select class="form-control" v-model="formData.kategori" required>
+                                <option v-for="cat in kategoriList" :value="cat">{{ cat }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">UT-Daerah</label>
+                            <select class="form-control" v-model="formData.upbjj" required>
+                                <option v-for="upbjj in upbjjList" :value="upbjj">{{ upbjj }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label class="form-label">Lokasi Rak</label>
+                            <input type="text" class="form-control" v-model="formData.lokasiRak" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Stock</label>
+                            <input type="number" class="form-control" v-model.number="formData.qty" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Safety</label>
+                            <input type="number" class="form-control" v-model.number="formData.safety" required min="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Harga</label>
+                        <input type="number" class="form-control" v-model.number="formData.harga" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Catatan (HTML)</label>
+                        <textarea class="form-control" v-model="formData.catatanHTML" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" @click="closeModals">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/script.js"></script>
+<script src="js/dataBahanAjar.js"></script>
+<script src="js/stock-app.js"></script>
+</body>
+</html>
