@@ -104,7 +104,7 @@
                         <span class="card-title">➕ Input Delivery Order Baru</span>
                     </div>
                     <div class="card-body">
-                        <form @submit.prevent="addDO">
+                        <form @submit.prevent="addDO" novalidate>
                             <div class="form-group">
                                 <label class="form-label">Nomor DO (Auto-generated)</label>
                                 <input type="text" class="form-control" v-model="newDO.nomor" disabled>
