@@ -28,6 +28,29 @@
         .local-alert-container {
             margin-bottom: 15px;
         }
+        
+        /* Modal specific local adjustments for tracking.html */
+        .modal-overlay {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            margin: auto;
+            overflow: hidden;
+        }
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
 
         [v-cloak] { display: none; }
     </style>
@@ -202,6 +225,21 @@
                 </div>
             </div>
         </main>
+    </div>
+    <!-- ═══ MODAL VALIDASI ═══ -->
+    <div class="modal-overlay" :class="{ active: showValidationModal }" @click.self="closeValidationModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <span class="modal-title">Peringatan</span>
+                <button type="button" class="modal-close" @click="closeValidationModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>{{ validationMessage }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" @click="closeValidationModal">OK</button>
+            </div>
+        </div>
     </div>
 </div>
 

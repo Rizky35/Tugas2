@@ -8,6 +8,8 @@ var trackingApp = new Vue({
         
         // UI State
         successMessage: '',
+        showValidationModal: false,
+        validationMessage: '',
 
         // Form state
         newDO: {
@@ -70,8 +72,24 @@ var trackingApp = new Vue({
         }
         
         this.generateDONumber();
+        
+        // Add Escape key listener for modal
+        document.addEventListener('keydown', this.handleKeydown);
+    },
+    beforeDestroy: function() {
+        // Clean up listener
+        document.removeEventListener('keydown', this.handleKeydown);
     },
     methods: {
+        handleKeydown: function(e) {
+            if (e.key === 'Escape') {
+                this.closeValidationModal();
+            }
+        },
+        closeValidationModal: function() {
+            this.showValidationModal = false;
+            this.validationMessage = '';
+        },
         generateDONumber: function() {
             var year = new Date().getFullYear();
             var keys = Object.keys(this.tracking);
@@ -90,7 +108,8 @@ var trackingApp = new Vue({
         },
         addDO: function() {
             if (!this.newDO.nim || !this.newDO.nama || !this.newDO.ekspedisi || !this.selectedPaketCode) {
-                alert('Mohon lengkapi semua data pengiriman.');
+                this.validationMessage = 'Mohon lengkapi semua data pengiriman.';
+                this.showValidationModal = true;
                 return;
             }
 
